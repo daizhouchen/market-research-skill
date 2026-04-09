@@ -18,10 +18,10 @@ description: "Adaptive market demand analysis skill for Claude Code. Dynamically
 
 ## 工作流概览
 
-Skill 分为 5 个阶段运行：
+Skill 分为 6 个阶段运行：
 
 ```
-阶段 1：环境准备 → 阶段 2：需求澄清 → 阶段 3：策略生成 → 阶段 4：数据采集与分析 → 阶段 5：报告生成
+阶段 1：环境准备 → 阶段 2：需求澄清 → 阶段 3：策略生成 → 阶段 4：数据采集与基础分析 → 阶段 4.5：深度分析 → 阶段 5：报告生成
 ```
 
 ---
@@ -47,11 +47,17 @@ Skill 分为 5 个阶段运行：
 与用户确认以下内容（如未明确指定则使用默认值，不逐一追问）：
 
 1. **研究主题**：关键词 / 产品名 / 品类
-2. **分析维度**（多选，默认全选）：
-   - 市场趋势
-   - 产品竞争格局
-   - 用户需求与痛点
-   - 竞品公司分析
+2. **分析维度**（多选，默认全选基础维度 + 按需启用深度维度）：
+   - 基础维度（默认全选）：
+     - 市场趋势
+     - 产品竞争格局
+     - 用户需求与痛点
+     - 竞品公司分析
+   - 深度维度（推荐在完整报告模式下启用）：
+     - 市场规模估算（TAM/SAM/SOM）
+     - 技术创新与壁垒分析
+     - 供需先行信号分析（招聘、广告、供应链）
+     - 用户深度洞察（JTBD + 旅程分析）
 3. **目标市场**：国家/地区（影响 API 参数和搜索语言）
 4. **输出偏好**：快速摘要 / 完整报告，中文 / 英文
 
@@ -89,7 +95,36 @@ Skill 分为 5 个阶段运行：
 
 4. 交叉验证：对每个初步结论检查是否有多数据源支撑，标注置信度
 
-5. 按"五个关键问题"框架生成综合洞察（见 `references/analysis_framework.md`）
+## 阶段 4.5：深度分析（v2 增强）
+
+当用户选择了深度维度，或选择完整报告模式时执行。读取 `references/analysis_framework.md` 中的"深度分析方法论"章节。
+
+1. **市场规模估算** → `tools/analyzers/market_sizer.py`
+   - 自上而下法：从行业报告提取 TAM，按细分/地区缩减为 SAM/SOM
+   - 自下而上法：从搜索量和竞品数据反推市场规模
+   - 三角验证：取两种方法的范围交集
+   - 判断市场生命周期阶段（萌芽/成长/成熟/衰退）
+
+2. **竞争力学分析** → `tools/analyzers/innovation_tracker.py`
+   - Porter 五力分析：对 5 个维度各评分 1-5，输出竞争强度评级
+   - 蓝海画布：提取 6-10 个竞争要素，识别消除/减少/提升/创造方向
+   - 技术采纳生命周期定位：判断市场处于创新者→落后者的哪个阶段
+   - 技术壁垒评估：专利、开源、核心算法的护城河分析
+
+3. **用户深度洞察** → `tools/analyzers/demand_deep_analyzer.py`
+   - JTBD 分析：提取用户"任务"而非表面功能需求，计算机会分数
+   - 主题聚类：评论/帖子的名词短语聚类，发现新兴主题
+   - 特征共现分析：识别"必备组合"和"差异化组合"
+   - 用户迁移路径：从"我从X换到Y"类评论中提取迁移网络
+   - 价格敏感度分析：价格锚点、付费意愿分层、弹性估算
+
+4. **先行信号扫描**（通过 Web Search 采集）
+   - 招聘趋势：相关岗位的数量和薪资变化
+   - 评论速度分析：评论/帖子数量的时间变化率 → `tools/analyzers/innovation_tracker.py`
+   - 广告/投放信号：竞品的营销投入变化
+   - 技术社区活跃度：GitHub Star 增长、技术博客热度
+
+5. 按"五个关键问题"框架 + "综合深度分析输出框架"生成最终洞察
 
 ## 阶段 5：报告生成
 
@@ -125,10 +160,13 @@ Skill 分为 5 个阶段运行：
 | 资源文件 | 何时读取 | 用途 |
 |---------|---------|------|
 | `config/config.example.yaml` | 阶段 1，config 缺失时 | API 配置模板 |
-| `config/dimensions.yaml` | 阶段 3 | 分析维度与数据源映射 |
-| `references/analysis_framework.md` | 阶段 4 | 核心分析方法论与推理框架 |
+| `config/dimensions.yaml` | 阶段 3 | 分析维度与数据源映射（含深度维度） |
+| `references/analysis_framework.md` | 阶段 4 & 4.5 | 核心方法论 + 深度分析框架（TAM/Porter/JTBD/蓝海等） |
 | `references/api_setup_guide.md` | 阶段 1，引导 API 配置时 | 各平台 API 配置指南 |
 | `references/data_source_specs.md` | 阶段 4，调用 API 时 | 各数据源能力、限制、输出格式 |
-| `templates/full_report.md` | 阶段 5 | 完整报告模板 |
+| `tools/analyzers/market_sizer.py` | 阶段 4.5 | 市场规模估算（TAM/SAM/SOM + 生命周期定位） |
+| `tools/analyzers/innovation_tracker.py` | 阶段 4.5 | Porter 五力、蓝海画布、技术采纳定位、评论速度分析 |
+| `tools/analyzers/demand_deep_analyzer.py` | 阶段 4.5 | JTBD 提取、主题聚类、迁移路径、价格敏感度 |
+| `templates/full_report.md` | 阶段 5 | 完整报告模板（含深度分析章节） |
 | `templates/quick_summary.md` | 阶段 5 | 快速摘要模板 |
 | `examples/` | 用户想看示例输出时 | 示例报告 |

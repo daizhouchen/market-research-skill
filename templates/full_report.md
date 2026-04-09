@@ -133,9 +133,126 @@
 
 ---
 
-## 五、洞察与建议
+## 五、市场规模与生命周期（深度分析）
 
-### 5.1 市场吸引力评估
+<!-- 仅在启用"市场规模估算"维度时生成 -->
+
+### 5.1 市场规模估算
+
+| 指标 | 估算范围 | 方法 | 置信度 |
+|------|---------|------|--------|
+| TAM（总可寻址市场） | {tam_range} | {tam_method} | {tam_confidence} |
+| SAM（可服务市场） | {sam_range} | {sam_method} | {sam_confidence} |
+| SOM（可获得市场） | {som_range} | {som_method} | {som_confidence} |
+| CAGR（年复合增长率） | {cagr} | {cagr_method} | {cagr_confidence} |
+
+**关键假设：**
+{market_size_assumptions}
+
+### 5.2 市场生命周期定位
+
+- **当前阶段**：{lifecycle_stage}
+- **判断依据**：{lifecycle_evidence}
+- **技术采纳曲线位置**：{adoption_curve_position}
+- **行动含义**：{lifecycle_implication}
+
+---
+
+## 六、竞争力学深度分析（深度分析）
+
+<!-- 仅在启用"技术创新与壁垒"维度时生成 -->
+
+### 6.1 Porter 五力分析
+
+| 力量 | 评分(1-5) | 关键证据 |
+|------|----------|---------|
+| 现有竞争者强度 | {rivalry_score} | {rivalry_evidence} |
+| 新进入者威胁 | {new_entrants_score} | {new_entrants_evidence} |
+| 替代品威胁 | {substitutes_score} | {substitutes_evidence} |
+| 买方议价能力 | {buyer_power_score} | {buyer_power_evidence} |
+| 供方议价能力 | {supplier_power_score} | {supplier_power_evidence} |
+| **综合竞争强度** | **{five_forces_overall}** | {five_forces_interpretation} |
+
+### 6.2 蓝海画布
+
+| 竞争要素 | {canvas_competitor_headers} |
+|---------|{canvas_separator}|
+{strategy_canvas_table}
+
+**差异化方向建议：**
+- 消除：{canvas_eliminate}
+- 减少：{canvas_reduce}
+- 提升：{canvas_raise}
+- 创造：{canvas_create}
+
+### 6.3 技术壁垒评估
+
+- **壁垒等级**：{barrier_level}/5
+- **核心技术**：{key_technologies}
+- **护城河**：{moats}
+- **开源替代**：{open_source_alternatives}
+
+---
+
+## 七、用户深度洞察（深度分析）
+
+<!-- 仅在启用"用户深度洞察"维度时生成 -->
+
+### 7.1 JTBD（用户任务）分析
+
+| 排名 | 用户任务 | 类型 | 重要性 | 满足度 | 机会分数 |
+|------|---------|------|--------|--------|---------|
+{jtbd_table}
+
+**黄金机会区（高重要性 + 低满足度）：**
+{golden_opportunities}
+
+### 7.2 用户迁移路径
+
+{migration_network}
+
+**净迁入最多的产品**：{top_gaining}
+**净迁出最多的产品**：{top_losing}
+**核心迁移驱动力**：{migration_drivers}
+
+### 7.3 价格敏感度分析
+
+- **价格锚点**：{price_anchors}
+- **付费意愿范围**：{willingness_to_pay}
+- **用户分群付费差异**：{payment_segments}
+
+### 7.4 新兴主题与特征共现
+
+**近期新兴主题（3个月内显著上升）：**
+{emerging_topics}
+
+**必备功能组合（共现率>70%）：**
+{must_have_pairs}
+
+**差异化功能组合（低共现但高满意度）：**
+{differentiator_pairs}
+
+---
+
+## 八、先行信号仪表盘（深度分析）
+
+<!-- 仅在启用"供需先行信号"维度时生成 -->
+
+| 信号类型 | 当前状态 | 趋势方向 | 数据来源 |
+|---------|---------|---------|---------|
+| 招聘量 | {hiring_volume} | {hiring_trend} | Web Search (LinkedIn) |
+| 薪资水平 | {salary_level} | {salary_trend} | Web Search |
+| 评论速度 | {review_velocity} | {review_velocity_trend} | App Store/Google Play |
+| 社区活跃度 | {community_activity} | {community_trend} | Reddit/GitHub |
+| 广告投放 | {ad_spend} | {ad_trend} | Web Search |
+
+**信号综合解读**：{signals_interpretation}
+
+---
+
+## 九、综合洞察与战略建议
+
+### 9.1 市场吸引力评估
 
 | 维度 | 评分（1-5） | 说明 |
 |------|-----------|------|
@@ -145,19 +262,19 @@
 | 进入壁垒 | {barrier_score} | {barrier_note} |
 | **综合评分** | **{overall_score}** | {overall_note} |
 
-### 5.2 机会点
+### 9.2 机会点
 
 {opportunities_list}
 
-### 5.3 风险提示
+### 9.3 风险提示
 
 {risks_list}
 
-### 5.4 差异化建议
+### 9.4 差异化建议
 
 {differentiation_suggestions}
 
-### 5.5 行动项
+### 9.5 战略行动路线图
 
 | 优先级 | 行动项 | 预期效果 | 时间周期 |
 |--------|--------|---------|---------|
@@ -175,6 +292,11 @@
 2. **竞品分析**：从多平台采集产品数据，构建功能对比矩阵，计算 HHI 指数评估市场集中度。
 3. **情感分析**：基于中英文情感词典的关键词匹配方法，覆盖正面/负面关键词各 30+ 个。
 4. **价格分析**：十分位分桶统计，皮尔逊相关系数评估价格-评分关系。
+5. **市场规模估算**：自上而下法（行业报告提取）与自下而上法（搜索量/竞品反推）三角验证。
+6. **Porter 五力**：基于竞品数量、融资数据、替代品分析、价格敏感度等多维数据综合评分。
+7. **JTBD 分析**：从用户文本中结构化提取用户任务，按"重要性 - 满足度"计算机会分数。
+8. **蓝海画布**：提取竞争要素，按竞品评分绘制策略画布，识别四个行动框架方向。
+9. **高级文本挖掘**：主题聚类、特征共现分析、评论速度追踪、用户迁移路径网络构建。
 
 ### B. 置信等级说明
 
