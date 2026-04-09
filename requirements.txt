@@ -1,0 +1,6 @@
+pytrends>=4.9.0
+praw>=7.7.0
+google-play-scraper>=1.2.7
+requests>=2.31
+pyyaml>=6.0
+numpy>=1.24

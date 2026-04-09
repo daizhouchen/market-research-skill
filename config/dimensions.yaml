@@ -1,0 +1,86 @@
+# ============================================================
+# 市场调研 - 分析维度定义
+# ============================================================
+# 每个维度包含：
+#   label          - 维度中文名称
+#   questions      - 该维度要回答的核心问题列表
+#   primary        - 首选数据源（优先使用）
+#   secondary      - 备选数据源（首选不可用时使用）
+#   fallback_queries - 回退到网页搜索时使用的查询模板
+#                      支持占位符：{keyword} = 调研关键词，{year} = 当前年份
+# ============================================================
+
+dimensions:
+
+  trend_analysis:
+    label: "市场趋势分析"
+    questions:
+      - "该市场/品类近年的增长或下降趋势如何？"
+      - "是否存在明显的季节性波动？"
+      - "有哪些值得关注的机会关键词正在崛起？"
+      - "搜索热度的地域分布有何特点？"
+    primary:
+      - google_trends
+    secondary:
+      - similarweb
+    fallback_queries:
+      - "{keyword} market trend {year}"
+      - "{keyword} growth rate {year}"
+      - "{keyword} seasonal trend analysis"
+      - "{keyword} emerging opportunity keywords {year}"
+
+  product_competition:
+    label: "产品竞争格局"
+    questions:
+      - "当前市场上有哪些主要竞品？"
+      - "各竞品的定价策略如何？"
+      - "用户对各竞品的评分和评价如何？"
+      - "市场中是否存在明显的产品空白或未满足的需求？"
+    primary:
+      - amazon
+      - app_store
+      - google_play
+    secondary:
+      - producthunt
+    fallback_queries:
+      - "{keyword} best products comparison {year}"
+      - "{keyword} price comparison review {year}"
+      - "{keyword} top rated products {year}"
+      - "{keyword} market gaps unmet needs {year}"
+
+  user_demand:
+    label: "用户需求与痛点"
+    questions:
+      - "用户最核心的需求是什么？"
+      - "用户反复提及的痛点有哪些？"
+      - "用户最希望改进或新增的功能是什么？"
+      - "不同用户群体的需求有何差异？"
+    primary:
+      - reddit
+    secondary:
+      - amazon
+      - app_store
+      - google_play
+    fallback_queries:
+      - "{keyword} user complaints pain points {year}"
+      - "{keyword} what users want reddit {year}"
+      - "{keyword} feature requests wishlist {year}"
+      - "{keyword} user reviews common issues {year}"
+
+  competitor_landscape:
+    label: "竞品公司分析"
+    questions:
+      - "该领域有哪些主要公司和团队？"
+      - "各公司的融资情况和发展阶段如何？"
+      - "近期是否有值得关注的新进入者？"
+      - "头部公司的核心竞争优势是什么？"
+    primary:
+      - crunchbase
+    secondary:
+      - producthunt
+      - similarweb
+    fallback_queries:
+      - "{keyword} top companies funding {year}"
+      - "{keyword} startup landscape {year}"
+      - "{keyword} new entrants competitors {year}"
+      - "{keyword} company analysis market share {year}"
