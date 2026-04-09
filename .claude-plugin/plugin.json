@@ -1,0 +1,22 @@
+{
+    "name": "market-research",
+    "version": "1.0.0",
+    "description": "Adaptive market demand analysis skill for Claude Code. Dynamically generates API call strategies, combines structured data collection with deep analysis frameworks (TAM/SAM/SOM, Porter Five Forces, JTBD, Blue Ocean Strategy), and outputs actionable market insight reports.",
+    "author": {
+        "name": "daizhouchen",
+        "url": "https://github.com/daizhouchen"
+    },
+    "homepage": "https://github.com/daizhouchen/market-research-skill",
+    "repository": "https://github.com/daizhouchen/market-research-skill",
+    "license": "MIT",
+    "keywords": [
+        "market-research",
+        "market-analysis",
+        "competitor-analysis",
+        "demand-analysis",
+        "TAM-SAM-SOM",
+        "porter-five-forces",
+        "JTBD",
+        "blue-ocean-strategy"
+    ]
+}

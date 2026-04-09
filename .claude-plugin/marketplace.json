@@ -1,0 +1,20 @@
+{
+    "name": "market-research-skill",
+    "description": "自适应市场需求分析 Skill — 动态 API 策略引擎 + 深度分析框架 + 可落地市场洞察报告",
+    "owner": {
+        "name": "daizhouchen",
+        "url": "https://github.com/daizhouchen"
+    },
+    "plugins": [
+        {
+            "name": "market-research",
+            "description": "Adaptive market demand analysis — 8 data sources, 8 dimensions, deep frameworks",
+            "version": "1.0.0",
+            "source": "./",
+            "author": {
+                "name": "daizhouchen",
+                "url": "https://github.com/daizhouchen"
+            }
+        }
+    ]
+}

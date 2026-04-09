@@ -1,0 +1,72 @@
+# ============================================================
+# 市场调研工具 - API 配置模板
+# ============================================================
+# 使用说明：
+#   1. 复制本文件为 config.yaml
+#   2. 填入你自己的 API 密钥
+#   3. 将不需要的数据源 enabled 设为 false
+# ============================================================
+
+apis:
+  # ---------- 免费数据源（无需 API 密钥） ----------
+
+  google_trends:
+    # Google Trends - 搜索趋势数据，免费使用，无需密钥
+    enabled: true
+
+  google_play:
+    # Google Play 商店 - 应用数据抓取，无需密钥
+    enabled: true
+    default_country: sg          # 默认国家/地区代码（sg = 新加坡）
+
+  app_store:
+    # Apple App Store - 应用数据抓取，无需密钥
+    enabled: true
+    default_country: sg          # 默认国家/地区代码（sg = 新加坡）
+
+  # ---------- 需要 API 密钥的数据源 ----------
+
+  reddit:
+    # Reddit - 用户讨论与需求分析
+    # 申请地址：https://www.reddit.com/prefs/apps
+    enabled: false
+    client_id: ""                # Reddit 应用的 client_id
+    client_secret: ""            # Reddit 应用的 client_secret
+    username: ""                 # Reddit 账号用户名
+    password: ""                 # Reddit 账号密码
+
+  producthunt:
+    # Product Hunt - 新产品发现与竞品追踪
+    # 申请地址：https://www.producthunt.com/v2/oauth/applications
+    enabled: false
+    access_token: ""             # Product Hunt API 访问令牌
+
+  amazon:
+    # Amazon Product Advertising API - 商品数据与评论分析
+    # 申请地址：https://affiliate-program.amazon.com/
+    enabled: false
+    access_key: ""               # Amazon API 访问密钥
+    secret_key: ""               # Amazon API 秘密密钥
+    partner_tag: ""              # Amazon 合作伙伴标签
+    marketplace: www.amazon.sg   # 目标市场站点（sg = 新加坡）
+
+  similarweb:
+    # SimilarWeb - 网站流量与竞品流量分析
+    # 申请地址：https://www.similarweb.com/corp/developer/
+    enabled: false
+    api_key: ""                  # SimilarWeb API 密钥
+
+  crunchbase:
+    # Crunchbase - 公司融资与行业数据
+    # 申请地址：https://data.crunchbase.com/
+    enabled: false
+    api_key: ""                  # Crunchbase API 密钥
+
+# ============================================================
+# 全局设置
+# ============================================================
+settings:
+  fallback_to_web_search: true   # 当 API 不可用时，是否回退到网页搜索
+  report_language: zh            # 报告输出语言（zh = 中文，en = 英文）
+  output_format: markdown        # 输出格式（markdown / html / json）
+  show_raw_data: false           # 是否在报告中展示原始数据（调试用）
