@@ -3,132 +3,132 @@ name: market-research
 description: "Adaptive market demand analysis skill for Claude Code. Dynamically generates API call strategies based on user-configured data sources, combines structured data collection with deep analysis frameworks, and outputs actionable market insight reports. Use this skill whenever the user mentions market analysis, market research, demand analysis, competitor analysis, product research, or asks questions like 'is there a market for X', 'is it worth building', 'market size', or wants to understand user needs, pain points, or competitive landscape for any product, category, or market direction — even if they don't explicitly say 'market research'."
 ---
 
-# Market Research Skill
+# Market Research Skill — 自适应市场需求分析
 
-An adaptive market demand analysis skill. Based on your configured APIs, it dynamically generates optimal data collection strategies, combines structured data with deep analysis frameworks, and outputs actionable market insight reports.
+根据用户已配置的 API 动态生成最优数据采集策略，结合结构化数据采集与深度分析框架，输出可落地的市场洞察报告。
 
-## Core Philosophy
+## 核心理念
 
-Data is the means; insight is the purpose. This skill focuses on:
+数据是手段，洞察是目的。本 Skill 聚焦于：
 
-- **Asking the right questions**: "Analyze the smartwatch market" gets decomposed into "who's buying, why, at what price point, what needs are unmet"
-- **Cross-validation**: Every conclusion needs at least two independent data sources
-- **Distinguishing fact from inference**: Data is fact, insights are inference — the report must label them clearly
-- **Action-oriented**: Every finding answers "so what" — what does it mean for the user's decision
+- **提出正确的问题**：用户说"分析智能手表市场"，Skill 应引导拆解为"谁在买、为什么买、买什么价位、哪些需求没被满足"
+- **交叉验证**：同一个结论至少要有两个数据源佐证（如 Google Trends 显示增长 + Reddit 讨论量上升）
+- **区分事实与推断**：数据是事实，洞察是推断，报告中必须标注清楚
+- **指向行动**：每个发现都要回答"so what"——对用户的决策意味着什么
 
-## Workflow Overview
+## 工作流概览
 
-The skill operates in 5 phases:
+Skill 分为 5 个阶段运行：
 
 ```
-Phase 1: Environment Setup → Phase 2: Requirements Clarification → Phase 3: Strategy Generation → Phase 4: Data Collection & Analysis → Phase 5: Report Generation
+阶段 1：环境准备 → 阶段 2：需求澄清 → 阶段 3：策略生成 → 阶段 4：数据采集与分析 → 阶段 5：报告生成
 ```
 
 ---
 
-## Phase 1: Environment Setup
+## 阶段 1：环境准备
 
-1. Check if `config/config.yaml` exists in the skill directory
-   - If not, copy from `config/config.example.yaml` and inform the user
-2. Run `tools/config_loader.py` to detect available data sources
-   - Output a status summary card showing which sources are available
-3. If fewer than 3 sources are available, proactively suggest configuration
-   - Read the relevant section from `references/api_setup_guide.md`
-   - Guide the user through setup
-   - Re-detect after configuration
-4. Install missing Python dependencies:
+1. 检查 `config/config.yaml` 是否存在
+   - 不存在 → 从 `config/config.example.yaml` 复制，告知用户
+2. 运行 `tools/config_loader.py` 检测可用数据源
+   - 输出数据源状态汇总卡片
+3. 如果可用数据源少于 3 个，主动建议配置
+   - 读取 `references/api_setup_guide.md` 中对应章节
+   - 引导用户完成配置
+   - 配置后重新检测
+4. 安装缺失的 Python 依赖：
    ```bash
    pip install pytrends praw google-play-scraper pyyaml requests numpy
    ```
-   - Check Node.js availability for `app-store-scraper` if needed
+   - 检查 Node.js 环境以支持 `app-store-scraper`（如需要）
 
-## Phase 2: Requirements Clarification
+## 阶段 2：需求澄清
 
-Confirm with the user (use defaults if not specified — don't ask one by one):
+与用户确认以下内容（如未明确指定则使用默认值，不逐一追问）：
 
-1. **Research topic**: keyword / product name / category
-2. **Analysis dimensions** (multi-select, default all):
-   - Market trends
-   - Product competition landscape
-   - User needs & pain points
-   - Competitor company analysis
-3. **Target market**: country/region (affects API params and search language)
-4. **Output preference**: quick summary / full report, Chinese / English
+1. **研究主题**：关键词 / 产品名 / 品类
+2. **分析维度**（多选，默认全选）：
+   - 市场趋势
+   - 产品竞争格局
+   - 用户需求与痛点
+   - 竞品公司分析
+3. **目标市场**：国家/地区（影响 API 参数和搜索语言）
+4. **输出偏好**：快速摘要 / 完整报告，中文 / 英文
 
-Defaults: all dimensions + country from config + full report + Chinese
+默认值：全部维度 + config 中的国家 + 完整报告 + 中文
 
-## Phase 3: Strategy Generation
+## 阶段 3：策略生成
 
-1. Read `config/dimensions.yaml` for dimension-to-source mapping
-2. Run `tools/strategy_engine.py` to generate a call plan
-3. Present the plan to the user:
-   - Which APIs will be called
-   - Which web searches will be performed
-   - Which dimensions are degraded due to missing sources
-   - Estimated time
-4. Highlight which dimensions could be enhanced by configuring additional APIs
-5. Proceed to Phase 4 after user confirmation
+1. 读取 `config/dimensions.yaml` 获取维度与数据源的映射
+2. 运行 `tools/strategy_engine.py` 生成调用计划
+3. 向用户展示调用计划：
+   - 将使用哪些 API
+   - 将进行哪些 Web Search
+   - 哪些维度因缺少数据源而降级
+   - 预估耗时
+4. 提示哪些维度可通过配置额外 API 来增强
+5. 用户确认后进入阶段 4
 
-## Phase 4: Data Collection & Analysis
+## 阶段 4：数据采集与分析
 
-1. Execute data collection per the call plan
-   - Show brief progress after each source completes
-   - Single source failure → log error, mark as degraded, continue (never abort)
-   - Save raw data as JSON if `show_raw_data=true`
+1. 按调用计划依次执行数据采集
+   - 每完成一个数据源，输出简短进度
+   - 单个数据源失败 → 记录错误，标记降级，不中断流程
+   - 如 `show_raw_data=true`，保存原始数据为 JSON
 
-2. Data cleaning
-   - Align time ranges and geographic scope across sources
-   - Normalize currencies, rating scales
-   - Remove obvious outliers and noise
+2. 数据清洗
+   - 统一时间范围和地区范围
+   - 标准化货币和评分量纲
+   - 去除明显异常值和噪音
 
-3. Read `references/analysis_framework.md` and analyze each dimension:
-   - Trends → `tools/analyzers/trend_analyzer.py`
-   - Product competition → `tools/analyzers/competitor_analyzer.py` + `tools/analyzers/pricing_analyzer.py`
-   - User needs → `tools/analyzers/sentiment_analyzer.py`
-   - Competitor companies → structured organization
+3. 读取 `references/analysis_framework.md`，按方法论逐维度分析：
+   - 趋势分析 → `tools/analyzers/trend_analyzer.py`
+   - 产品竞争 → `tools/analyzers/competitor_analyzer.py` + `tools/analyzers/pricing_analyzer.py`
+   - 用户需求 → `tools/analyzers/sentiment_analyzer.py`
+   - 竞品公司 → 结构化整理
 
-4. Cross-validate: check each preliminary conclusion against multiple sources, assign confidence levels
+4. 交叉验证：对每个初步结论检查是否有多数据源支撑，标注置信度
 
-5. Synthesize using the "Five Key Questions" framework (see `references/analysis_framework.md`)
+5. 按"五个关键问题"框架生成综合洞察（见 `references/analysis_framework.md`）
 
-## Phase 5: Report Generation
+## 阶段 5：报告生成
 
-1. Dynamically select report sections based on available data (skip dimensions with no data — no empty sections)
-2. Use `templates/full_report.md` or `templates/quick_summary.md` as the template
-3. Include data source status card for full transparency
-4. After output, prompt:
-   - Which conclusions have low confidence and need verification
-   - Which dimensions could be enhanced by configuring more APIs
-   - The user can deep-dive into any finding
-
----
-
-## Execution Rules
-
-1. **Always read config first**: Run `config_loader.py` before any data collection
-2. **Guide on missing config**: Don't just mark "skipped" — tell the user how to configure and what they'd gain
-3. **Show plan before executing**: Get user confirmation on the call plan
-4. **Errors don't abort**: Single source failure → log → degrade → continue
-5. **Never fabricate data**: Skip uncollected dimensions, never fill with made-up data
-6. **Cross-validate**: Conclusions in "insights" must have multi-source support
-7. **Cite sources**: Every data point labeled with its source
-8. **Label confidence**: Every inference tagged 🟢(high) 🟡(medium) 🔴(low)
-9. **Separate fact from inference**: Data is fact, analysis is inference — never mix
-10. **Point to action**: Every finding answers "so what"
-11. **Guide deeper exploration**: End report with questions needing further verification
-12. **Auditable raw data**: Save collected data as JSON for verification
+1. 根据实际采集到的数据动态选择报告章节（无数据的维度跳过，不留空章节）
+2. 使用 `templates/full_report.md` 或 `templates/quick_summary.md` 作为模板
+3. 包含数据源状态卡片，保持完全透明
+4. 输出后提示：
+   - 哪些结论置信度较低需进一步验证
+   - 配置更多 API 可以增强哪些维度
+   - 用户可针对某个发现做深入追问
 
 ---
 
-## Resource Map
+## 执行规则
 
-| Resource | When to Read | Purpose |
-|----------|-------------|---------|
-| `config/config.example.yaml` | Phase 1, when config missing | API configuration template |
-| `config/dimensions.yaml` | Phase 3 | Dimension-to-source mapping |
-| `references/analysis_framework.md` | Phase 4 | Core analysis methodology & reasoning framework |
-| `references/api_setup_guide.md` | Phase 1, when guiding API setup | Step-by-step API configuration guide |
-| `references/data_source_specs.md` | Phase 4, when calling APIs | API capabilities, limits, output formats |
-| `templates/full_report.md` | Phase 5 | Full report template |
-| `templates/quick_summary.md` | Phase 5 | Quick summary template |
-| `examples/` | When user wants to see sample output | Example reports |
+1. **永远先读配置**：执行任何采集前必须先运行 `config_loader.py`
+2. **缺配置要引导**：不只是标记"跳过"，要告知用户配置方法和收益
+3. **展示计划再执行**：调用计划经用户确认后才执行
+4. **错误不中断**：单个数据源失败 → 记录 → 降级 → 继续
+5. **不造数据**：没采集到的维度跳过，不编造数据填充
+6. **交叉验证**：写入"洞察"的结论必须有多数据源支撑
+7. **标注来源**：每个数据点标注来自哪个数据源
+8. **标注置信度**：每个推断标注 🟢(高) 🟡(中) 🔴(低)
+9. **区分事实与推断**：数据是事实，分析是推断，不混淆
+10. **指向行动**：每个发现回答"so what"
+11. **引导深入**：报告结尾标注哪些问题需进一步验证
+12. **中间数据可查**：原始采集数据保存为 JSON 供核查
+
+---
+
+## 资源索引
+
+| 资源文件 | 何时读取 | 用途 |
+|---------|---------|------|
+| `config/config.example.yaml` | 阶段 1，config 缺失时 | API 配置模板 |
+| `config/dimensions.yaml` | 阶段 3 | 分析维度与数据源映射 |
+| `references/analysis_framework.md` | 阶段 4 | 核心分析方法论与推理框架 |
+| `references/api_setup_guide.md` | 阶段 1，引导 API 配置时 | 各平台 API 配置指南 |
+| `references/data_source_specs.md` | 阶段 4，调用 API 时 | 各数据源能力、限制、输出格式 |
+| `templates/full_report.md` | 阶段 5 | 完整报告模板 |
+| `templates/quick_summary.md` | 阶段 5 | 快速摘要模板 |
+| `examples/` | 用户想看示例输出时 | 示例报告 |
