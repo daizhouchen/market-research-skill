@@ -54,9 +54,11 @@ dimensions:
       - "用户最核心的需求是什么？"
       - "用户反复提及的痛点有哪些？"
       - "用户最希望改进或新增的功能是什么？"
+      - "Reddit 上用户真实讨论中反映了哪些需求和不满？"
       - "不同用户群体的需求有何差异？"
     primary:
       - reddit
+      - reddit_public
     secondary:
       - amazon
       - app_store
@@ -167,6 +169,7 @@ dimensions:
       - "超级用户和普通用户的行为差异是什么？"
     primary:
       - reddit
+      - reddit_public
     secondary:
       - amazon
       - app_store

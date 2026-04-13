@@ -21,7 +21,7 @@ except ImportError:
     yaml = None
 
 # 无需API密钥即可使用的数据源
-NO_KEY_SOURCES = {"google_trends", "google_play", "app_store"}
+NO_KEY_SOURCES = {"google_trends", "google_play", "app_store", "reddit_public"}
 
 
 def load_yaml(path: str) -> Optional[Dict[str, Any]]:
@@ -93,6 +93,7 @@ def _get_credential_fields(source_name: str) -> list:
     field_map = {
         "reddit": ["client_id", "client_secret"],
         "producthunt": ["access_token"],
+        "amazon": ["access_key", "secret_key", "partner_tag"],
         "amazon_paapi": ["access_key", "secret_key", "partner_tag"],
         "similarweb": ["api_key"],
         "crunchbase": ["api_key"],
@@ -115,9 +116,10 @@ def check_config(config_path: str) -> Dict[str, Dict[str, str]]:
     if config is None:
         return {}
 
-    sources = config.get("sources", config.get("api_sources", {}))
+    # 兼容多种配置文件格式：apis / sources / api_sources
+    sources = config.get("apis", config.get("sources", config.get("api_sources", {})))
     if not isinstance(sources, dict):
-        print("[错误] 配置文件中未找到有效的 sources 或 api_sources 字段")
+        print("[错误] 配置文件中未找到有效的 apis / sources / api_sources 字段")
         return {}
 
     report: Dict[str, Dict[str, str]] = {}

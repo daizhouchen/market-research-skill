@@ -18,24 +18,45 @@ description: "Adaptive market demand analysis skill for Claude Code. Dynamically
 
 ## 工作流概览
 
-Skill 分为 6 个阶段运行：
+Skill 分为 7 个阶段运行：
 
 ```
-阶段 1：环境准备 → 阶段 2：需求澄清 → 阶段 3：策略生成 → 阶段 4：数据采集与基础分析 → 阶段 4.5：深度分析 → 阶段 5：报告生成
+阶段 1：环境准备 → 阶段 2：需求澄清 → 阶段 3：策略生成 → 阶段 4：数据采集与基础分析 → 阶段 4.5：深度分析 → 阶段 5：报告生成（MD） → 阶段 6：格式转换（HTML/PDF）
 ```
 
 ---
 
 ## 阶段 1：环境准备
 
+### 1.1 配置文件检查与生成
+
 1. 检查 `config/config.yaml` 是否存在
-   - 不存在 → 从 `config/config.example.yaml` 复制，告知用户
+   - **如果不存在**（首次使用）：
+     a. **必须暂停工作流**，主动引导用户进行 API 配置
+     b. 向用户展示可用数据源列表，分三个层级说明：
+        - **免费无需配置**（Google Trends、Google Play、App Store、Reddit 公开接口）：告知用户这些数据源开箱即用
+        - **免费但需注册**（Reddit API（更高限额）、Product Hunt、Crunchbase Basic）：告知注册地址和预计时间
+        - **付费**（Amazon PA-API、SimilarWeb）：告知费用和是否值得配置
+     c. 使用 AskUserQuestion 询问用户：
+        - 是否要现在配置额外的 API 密钥？（推荐至少配置 Reddit 以获取用户讨论数据）
+        - 还是先用免费数据源快速开始？
+     d. **根据用户选择**：
+        - 如果用户选择配置 → 读取 `references/api_setup_guide.md` 中对应章节，逐步引导配置，将用户提供的密钥写入 `config/config.yaml`
+        - 如果用户选择跳过 → 从 `config/config.example.yaml` 复制为 `config/config.yaml`（保留免费数据源为 enabled，其余保持 disabled）
+     e. **配置完成后，告知用户**：已生成配置文件 `config/config.yaml`，后续可随时编辑该文件添加更多 API 密钥
+   - **如果已存在**：直接进入步骤 1.2（跳过引导流程）
+
+### 1.2 数据源状态检测
+
 2. 运行 `tools/config_loader.py` 检测可用数据源
-   - 输出数据源状态汇总卡片
-3. 如果可用数据源少于 3 个，主动建议配置
+   - 输出数据源状态汇总卡片（表格形式，包含 ✅/⚠️/❌ 状态图标）
+3. 如果可用数据源少于 3 个，主动建议配置额外数据源
    - 读取 `references/api_setup_guide.md` 中对应章节
-   - 引导用户完成配置
-   - 配置后重新检测
+   - 明确告知用户：配置 Reddit 可获取真实用户讨论和痛点数据，配置 Crunchbase 可获取融资和公司数据
+   - 用户选择不配置则继续，不阻塞流程
+
+### 1.3 依赖安装
+
 4. 安装缺失的 Python 依赖：
    ```bash
    pip install pytrends praw google-play-scraper pyyaml requests numpy
@@ -87,7 +108,13 @@ Skill 分为 6 个阶段运行：
    - 标准化货币和评分量纲
    - 去除明显异常值和噪音
 
-3. 读取 `references/analysis_framework.md`，按方法论逐维度分析：
+3. **Reddit 用户数据采集**（当 `reddit_public` 已启用且 `reddit` API 未配置时）：
+   - 运行 `tools/sources/reddit_public.py --keyword {keyword}` 获取推荐的 subreddits 和搜索查询
+   - 使用 WebSearch 执行 `site:reddit.com "{keyword}" pain points complaints` 等查询
+   - 从搜索结果中提取 Reddit 用户的真实讨论、痛点、需求
+   - 注意：Reddit 自 2024 年锁定了 .json 公开接口，因此通过 Web Search 间接获取
+
+4. 读取 `references/analysis_framework.md`，按方法论逐维度分析：
    - 趋势分析 → `tools/analyzers/trend_analyzer.py`
    - 产品竞争 → `tools/analyzers/competitor_analyzer.py` + `tools/analyzers/pricing_analyzer.py`
    - 用户需求 → `tools/analyzers/sentiment_analyzer.py`
@@ -136,6 +163,53 @@ Skill 分为 6 个阶段运行：
    - 配置更多 API 可以增强哪些维度
    - 用户可针对某个发现做深入追问
 
+## 阶段 6：格式转换与输出（HTML/PDF）
+
+在阶段 5 生成 Markdown 报告后，自动将其转换为美观的 HTML 网页报告，并引导用户获取 PDF。
+
+### 6.1 安装依赖
+
+```bash
+pip install markdown
+```
+
+### 6.2 一键导出 HTML + PDF
+
+运行 `tools/report_exporter.py`，**一条命令同时生成 HTML 和 PDF**：
+
+```bash
+python tools/report_exporter.py <报告.md>
+```
+
+脚本会自动完成以下全部步骤（无需用户干预）：
+1. 从 MD 中提取标题和日期
+2. 使用 `markdown` 库转换为 HTML 片段（含表格预处理修复）
+3. 注入到 `templates/report_template.html` 模板中
+4. 输出同名 `.html` 文件
+5. **自动检测系统浏览器**（Edge → Chrome → Chromium，优先级依次递减）
+6. **使用 headless 模式自动将 HTML 打印为 PDF**（无需打开浏览器窗口）
+7. 输出同名 `.pdf` 文件
+
+可选参数：
+- `--output <目录>` / `-o <目录>`：指定输出目录
+- `--no-pdf`：仅生成 HTML，跳过 PDF
+
+如果系统无可用浏览器（极少见），脚本会输出警告并提示用户手动打印。
+
+### 6.3 打开 HTML 供用户预览
+
+HTML 和 PDF 生成后，尝试自动在浏览器中打开 HTML 文件供用户预览：
+- Windows: `start "" "<html文件路径>"`
+- Mac: `open "<html文件路径>"`
+- Linux: `xdg-open "<html文件路径>"`
+
+### 6.4 输出汇总
+
+向用户展示最终输出文件列表：
+- `{keyword}市场调研报告.md` — Markdown 原始报告（可编辑）
+- `{keyword}市场调研报告.html` — HTML 网页报告（浏览器打开查看）
+- `{keyword}市场调研报告.pdf` — PDF 报告（自动生成，可直接分享）
+
 ---
 
 ## 执行规则
@@ -169,4 +243,7 @@ Skill 分为 6 个阶段运行：
 | `tools/analyzers/demand_deep_analyzer.py` | 阶段 4.5 | JTBD 提取、主题聚类、迁移路径、价格敏感度 |
 | `templates/full_report.md` | 阶段 5 | 完整报告模板（含深度分析章节） |
 | `templates/quick_summary.md` | 阶段 5 | 快速摘要模板 |
+| `templates/report_template.html` | 阶段 6 | HTML 报告模板（含内嵌 CSS 样式） |
+| `tools/sources/reddit_public.py` | 阶段 4 | Reddit 数据辅助采集：生成 site:reddit.com 搜索查询 + subreddit 推荐（无需 API） |
+| `tools/report_exporter.py` | 阶段 6 | MD→HTML 格式转换脚本 |
 | `examples/` | 用户想看示例输出时 | 示例报告 |
