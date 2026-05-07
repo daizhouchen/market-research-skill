@@ -1,3 +1,13 @@
+<!-- daizhouchen-banner-begin -->
+<p align="center">
+  <img src="assets/hero.png" alt="market-research-skill" width="100%"/>
+</p>
+
+> **自适应市场需求分析 · 按场景自适应方法 · 输出可决策。**
+>
+> *adaptive market demand analysis · scenario-aware methods.*
+<!-- daizhouchen-banner-end -->
+
 # Market Research Skill
 
 一个为 Claude Code 设计的自适应市场需求分析 Skill。根据用户已配置的 API 动态生成调用策略，结合结构化数据采集与深度分析框架，输出可落地的市场洞察报告。
@@ -59,3 +69,9 @@ market-research/
 ## License
 
 MIT
+
+---
+<!-- daizhouchen-footer-begin -->
+
+Part of [**daizhouchen 实验集**](https://github.com/daizhouchen) → 一个 AI 应用创造者的实验现场。
+<!-- daizhouchen-footer-end -->
