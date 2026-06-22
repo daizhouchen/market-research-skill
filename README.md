@@ -28,6 +28,7 @@
 | Google Play | 否 | 产品竞争 |
 | App Store | 否 | 产品竞争 |
 | Reddit | 是（免费） | 用户需求 |
+| Xquik | 是 | 公开 X 讨论、竞品提及、发布反应 |
 | Product Hunt | 是（免费） | 产品竞争 |
 | Amazon PA-API | 是（免费） | 产品竞争 |
 | SimilarWeb | 是（付费） | 流量分析 |

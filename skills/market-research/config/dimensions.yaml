@@ -60,6 +60,7 @@ dimensions:
       - reddit
       - reddit_public
     secondary:
+      - xquik
       - amazon
       - app_store
       - google_play
@@ -102,6 +103,7 @@ dimensions:
     primary: []  # 无直接 API，主要依赖 web search + 推算
     secondary:
       - google_trends
+      - xquik
       - crunchbase
     fallback_queries:
       - "{keyword} market size {year}"
@@ -171,6 +173,7 @@ dimensions:
       - reddit
       - reddit_public
     secondary:
+      - xquik
       - amazon
       - app_store
       - google_play
