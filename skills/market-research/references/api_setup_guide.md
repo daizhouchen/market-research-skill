@@ -135,6 +135,38 @@ reddit:
 
 ---
 
+## 4.5 Xquik
+
+| 项目 | 详情 |
+|---|---|
+| **费用** | 需要 Xquik API key |
+| **注册地址** | https://xquik.com |
+| **审批时间** | 账号开通后可用 |
+
+### 配置步骤
+1. 在 Xquik 创建或打开账号
+2. 创建 API key
+3. 将 API key 写入本地 `config/config.yaml`
+4. 不要把 API key 写入报告、日志、示例或提交记录
+
+### 配置字段
+```yaml
+xquik:
+  enabled: true
+  api_key: "你的 Xquik API key"
+  api_contract: "2026-04-29"
+  default_limit: 50
+```
+
+### 限制与注意事项
+- **认证方式**：请求头 `x-api-key`
+- **契约头**：请求头 `xquik-api-contract: 2026-04-29`
+- **数据范围**：公开 X 搜索结果、竞品提及、用户语言、发布反应
+- **证据边界**：公开 X 只作为社交信号，不单独证明市场规模、收入、定价、法律、安全或融资结论
+- **隐私**：只引用公开 URL 与聚合主题，不复制 API key 或敏感账号信息
+
+---
+
 ## 5. Product Hunt
 
 | 项目 | 详情 |

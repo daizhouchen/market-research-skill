@@ -144,6 +144,73 @@
 
 ---
 
+## 2.5 xquik
+
+| 规格项 | 详情 |
+|---|---|
+| **依赖库** | `requests >= 2.31.0` |
+| **认证方式** | API Key（Header: `x-api-key`） |
+| **基础 URL** | `https://xquik.com/api/v1/x/tweets/search` |
+
+### 输入参数
+```python
+{
+    "query": str,                  # 搜索关键词或短语
+    "limit": int,                  # 返回数量上限，默认 50
+    "exact_phrase": str | None,    # 精确短语，可选
+    "from_user": str | None,       # 限定发布账号，可选
+    "mentioning": str | None,      # 限定提及账号，可选
+    "since_date": str | None,      # YYYY-MM-DD，可选
+    "until_date": str | None,      # YYYY-MM-DD，可选
+    "query_type": str,             # Latest 或 Top
+    "cursor": str | None,          # 翻页游标，可选
+}
+```
+
+### 输出格式
+```python
+{
+    "tweets": list[dict],
+    "has_more": bool,
+    "next_cursor": str,
+    "metadata": {
+        "source": "xquik",
+        "query": str,
+        "total_results": int,
+        "fetched_at": str,
+        "status": "success" | "partial" | "failed",
+    }
+}
+```
+
+### 适用分析
+- 用户需求：痛点短语、愿望、迁移原因、竞品抱怨
+- 供需信号：发布反应、创作者关注、活动热度、内容速度
+- 用户旅程：发现渠道、评估语言、替代方案、购买触发词
+
+### 证据边界
+- 将公开 X 帖子标注为 "observed" 或 "reported"，不要标注为 confirmed
+- 不用公开 X 单独证明市场规模、收入、定价、法律、安全或融资结论
+- 对每个主题记录查询词、样本量、代表性 URL、作者类型和时间窗口
+- 只引用公开 URL 与聚合主题，不在报告、日志、示例或提交记录中写入 API key
+
+### 错误处理
+| 错误类型 | 处理方式 |
+|---|---|
+| HTTP 401 / 403 | 检查 API key，标记为未配置或认证失败 |
+| HTTP 402 | 标记为额度不足，报告中说明 Xquik 数据不可用 |
+| HTTP 429 | 指数退避重试，最多 3 次 |
+| HTTP 5xx | 退避重试，最多 3 次 |
+| 超时 | 重试 2 次，每次增加超时时间 |
+
+### 降级策略
+- **Level 1**：减少 limit，缩短时间窗口
+- **Level 2**：只采集代表性查询，不翻页
+- **Level 3**：回退到 Web Search 中的公开 X 页面结果
+- **Level 4**：跳过该数据源，报告中标注 "Xquik 数据不可用"
+
+---
+
 ## 3. producthunt
 
 | 规格项 | 详情 |

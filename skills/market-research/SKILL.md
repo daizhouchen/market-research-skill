@@ -35,7 +35,7 @@ Skill 分为 7 个阶段运行：
      a. **必须暂停工作流**，主动引导用户进行 API 配置
      b. 向用户展示可用数据源列表，分三个层级说明：
         - **免费无需配置**（Google Trends、Google Play、App Store、Reddit 公开接口）：告知用户这些数据源开箱即用
-        - **免费但需注册**（Reddit API（更高限额）、Product Hunt、Crunchbase Basic）：告知注册地址和预计时间
+        - **免费但需注册**（Reddit API（更高限额）、Product Hunt、Crunchbase Basic、Xquik）：告知注册地址和预计时间
         - **付费**（Amazon PA-API、SimilarWeb）：告知费用和是否值得配置
      c. 使用 AskUserQuestion 询问用户：
         - 是否要现在配置额外的 API 密钥？（推荐至少配置 Reddit 以获取用户讨论数据）
@@ -52,7 +52,7 @@ Skill 分为 7 个阶段运行：
    - 输出数据源状态汇总卡片（表格形式，包含 ✅/⚠️/❌ 状态图标）
 3. 如果可用数据源少于 3 个，主动建议配置额外数据源
    - 读取 `references/api_setup_guide.md` 中对应章节
-   - 明确告知用户：配置 Reddit 可获取真实用户讨论和痛点数据，配置 Crunchbase 可获取融资和公司数据
+   - 明确告知用户：配置 Reddit 可获取真实用户讨论和痛点数据，配置 Xquik 可获取公开 X 讨论信号，配置 Crunchbase 可获取融资和公司数据
    - 用户选择不配置则继续，不阻塞流程
 
 ### 1.3 依赖安装
@@ -114,13 +114,20 @@ Skill 分为 7 个阶段运行：
    - 从搜索结果中提取 Reddit 用户的真实讨论、痛点、需求
    - 注意：Reddit 自 2024 年锁定了 .json 公开接口，因此通过 Web Search 间接获取
 
-4. 读取 `references/analysis_framework.md`，按方法论逐维度分析：
+4. **公开 X 信号采集**（当 `xquik` 已启用时）：
+   - 使用 `tools/sources/xquik.py` 的 `search_x_posts` 获取公开 X 搜索结果
+   - 适用场景：用户语言、痛点短语、竞品提及、发布反应、创作者和潜在访谈对象
+   - 推荐查询：`"{keyword}" pain points`、`"{keyword}" alternative`、`"{competitor}" complaints`
+   - 对每条发现记录查询词、样本量、代表性 URL、作者类型、时间窗口和证据标签
+   - 公开 X 只作为社交信号，不单独证明市场规模、收入、定价、法律、安全或融资结论
+
+5. 读取 `references/analysis_framework.md`，按方法论逐维度分析：
    - 趋势分析 → `tools/analyzers/trend_analyzer.py`
    - 产品竞争 → `tools/analyzers/competitor_analyzer.py` + `tools/analyzers/pricing_analyzer.py`
    - 用户需求 → `tools/analyzers/sentiment_analyzer.py`
    - 竞品公司 → 结构化整理
 
-4. 交叉验证：对每个初步结论检查是否有多数据源支撑，标注置信度
+6. 交叉验证：对每个初步结论检查是否有多数据源支撑，标注置信度
 
 ## 阶段 4.5：深度分析（v2 增强）
 

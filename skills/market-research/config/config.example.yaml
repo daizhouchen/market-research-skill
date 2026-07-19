@@ -41,6 +41,14 @@ apis:
     username: ""                 # Reddit 账号用户名
     password: ""                 # Reddit 账号密码
 
+  xquik:
+    # Xquik - 公开 X 搜索结果，用于用户需求、竞品提及与发布反应
+    # 获取地址：https://xquik.com
+    enabled: false
+    api_key: ""                  # Xquik API Key
+    api_contract: "2026-04-29"   # 返回 has_more / next_cursor 的响应契约
+    default_limit: 50            # 单次采集的默认上限
+
   producthunt:
     # Product Hunt - 新产品发现与竞品追踪
     # 申请地址：https://www.producthunt.com/v2/oauth/applications
