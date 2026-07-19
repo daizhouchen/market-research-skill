@@ -26,6 +26,7 @@ import subprocess
 import sys
 import time
 from datetime import date
+from html import escape
 
 try:
     import markdown
@@ -161,8 +162,8 @@ def inject_into_template(template: str, content_html: str, title: str, report_da
         完整的 HTML 页面字符串
     """
     result = template.replace("{{content}}", content_html)
-    result = result.replace("{{title}}", title)
-    result = result.replace("{{date}}", report_date)
+    result = result.replace("{{title}}", escape(title))
+    result = result.replace("{{date}}", escape(report_date))
     return result
 
 
