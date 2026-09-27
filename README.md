@@ -1,74 +1,79 @@
-<!-- daizhouchen-banner-begin -->
-<p align="center">
-  <img src="assets/hero.png" alt="market-research-skill" width="100%"/>
-</p>
+# Market Research · 市场研究
 
-> **自适应市场需求分析 · 按场景自适应方法 · 输出可决策。**
->
-> *adaptive market demand analysis · scenario-aware methods.*
-<!-- daizhouchen-banner-end -->
+![Skill 工作方式示意](assets/cover.svg)
 
-# Market Research Skill
+根据已配置的数据源规划市场调研，结合趋势、竞品、定价和用户反馈，输出可追溯的 Markdown / HTML 报告。需要可用浏览器时，也可导出 PDF。
 
-一个为 Claude Code 设计的自适应市场需求分析 Skill。根据用户已配置的 API 动态生成调用策略，结合结构化数据采集与深度分析框架，输出可落地的市场洞察报告。
+这是 AI 助手执行的 Skill，附带数据采集和分析脚本；策略引擎生成计划，不会独立完成一份研究报告。
 
-## 特性
+## 能力与数据源
 
-- **零配置可用**：Google Trends + App Store/Google Play 无需 API Key，加上 Web Search 兜底
-- **动态策略引擎**：根据可用数据源自动生成最优采集方案
-- **交叉验证**：每个结论至少有两个数据源佐证
-- **置信度标注**：区分事实与推断，标注 🟢🟡🔴 置信度
-- **渐进式增强**：配置更多 API 可解锁更深入的分析维度
+| 数据来源 | 当前用途 | 前提 |
+|---|---|---|
+| Google Trends | 相对搜索热度 | `pytrends`，无需密钥；可能限流 |
+| App Store / Google Play | 应用信息与竞争分析 | 公共接口或 scraper；受地区和访问状态影响 |
+| Reddit 公开搜索辅助 | 生成搜索查询 | 助手具备网页搜索能力 |
+| Reddit / Product Hunt | 讨论与产品信息 | 已配置并获授权的 API 凭据 |
+| Amazon / SimilarWeb / Crunchbase | 商品、流量与公司信息 | 对应账号权限和 API 额度；Amazon 适配器为简化实现 |
 
-## 支持的数据源
+无需密钥的数据源可作为起点，但不保证每次能返回数据。配置检查仅判断字段是否齐全，不验证权限或网络连通性。
 
-| 数据源 | 需要 API Key | 覆盖维度 |
-|--------|------------|---------|
-| Google Trends | 否 | 市场趋势 |
-| Google Play | 否 | 产品竞争 |
-| App Store | 否 | 产品竞争 |
-| Reddit | 是（免费） | 用户需求 |
-| Product Hunt | 是（免费） | 产品竞争 |
-| Amazon PA-API | 是（免费） | 产品竞争 |
-| SimilarWeb | 是（付费） | 流量分析 |
-| Crunchbase | 是（免费） | 竞品公司 |
+## 安装
 
-## 快速开始
+需要支持本地 Skills 的 AI 助手、Git 和 **Python 3.10+**。
 
-1. 将 `config/config.example.yaml` 复制为 `config/config.yaml`
-2. 填入你拥有的 API 凭据（没有的留空）
-3. 在 Claude Code 中说："帮我分析智能手表市场"
-
-## 安装依赖
+Claude Code 个人安装（macOS / Linux）：
 
 ```bash
-pip install -r requirements.txt
+mkdir -p ~/.claude/skills
+git clone https://github.com/daizhouchen/market-research-skill.git ~/.claude/skills/market-research
+cd ~/.claude/skills/market-research
+python -m pip install -r requirements.txt
+cp config/config.example.yaml config/config.yaml
 ```
 
-## 文件结构
+Windows PowerShell：
 
-```
-market-research/
-├── SKILL.md                     # Skill 入口
-├── config/
-│   ├── config.example.yaml      # API 配置模板
-│   └── dimensions.yaml          # 分析维度映射
-├── references/
-│   ├── analysis_framework.md    # 分析方法论
-│   ├── api_setup_guide.md       # API 配置指南
-│   └── data_source_specs.md     # 数据源技术规格
-├── tools/
-│   ├── config_loader.py         # 配置加载与检测
-│   ├── strategy_engine.py       # 动态策略引擎
-│   ├── sources/                 # 数据采集模块
-│   └── analyzers/               # 数据分析模块
-├── templates/                   # 报告模板
-└── examples/                    # 示例输出
+```powershell
+git clone https://github.com/daizhouchen/market-research-skill.git "$env:USERPROFILE/.claude/skills/market-research"
+Set-Location "$env:USERPROFILE/.claude/skills/market-research"
+python -m pip install -r requirements.txt
+Copy-Item config/config.example.yaml config/config.yaml
 ```
 
-## License
+保持需密钥的数据源为 `enabled: false`，有相应授权后再在本地配置。不要把密钥写进报告或提交到仓库。
 
-MIT
+仓库根目录是直接安装入口；`skills/market-research/` 是 Claude 插件打包副本，两者保持同步，选择一种安装方式即可。插件方式使用副本内的 `config/`；依赖仍从仓库根目录的 `requirements.txt` 安装。
+
+## 使用
+
+“用 market-research 分析智能手表市场，目标地区为新加坡，先给快速摘要。”
+
+在安装目录中检查配置并生成计划：
+
+```bash
+python tools/config_loader.py
+python tools/strategy_engine.py --keyword "智能手表" --geo sg
+```
+
+助手按计划采集数据、记录失败与缺口，再写报告。导出已有报告：
+
+```bash
+python tools/report_exporter.py report.md --no-pdf
+# 检测到 Edge / Chrome / Chromium 时可尝试同时生成 PDF
+python tools/report_exporter.py report.md
+```
+
+Node.js 的 `app-store-scraper` 是可选增强；未安装时 App Store 模块回退到 iTunes Search API。
+
+## 参考与边界
+
+- [工作流](SKILL.md) · [配置模板](config/config.example.yaml) · [分析方法](references/analysis_framework.md) · [数据源规格](references/data_source_specs.md)
+- 采集失败、缺失值和零值需要区分；无数据的维度保留缺口说明，不据此推断“没有需求”。
+- Google Trends 是相对指数，不能直接当搜索人数或市场规模。TAM/SAM/SOM 脚本含假设，只能作为情景估算并披露输入口径。
+- [examples/](examples/) 是已有报告示例，不是最新市场事实。
+
+MIT License，见 [LICENSE](LICENSE)。
 
 ---
 <!-- daizhouchen-footer-begin -->

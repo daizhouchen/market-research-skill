@@ -25,8 +25,8 @@ apis:
     default_country: sg          # 默认国家/地区代码（sg = 新加坡）
 
   reddit_public:
-    # Reddit 公开 JSON 接口 - 无需密钥，通过 URL.json 获取公开数据
-    # 限速：约 10 次/分钟，适合小规模采集
+    # Reddit 公开搜索辅助 - 无需密钥，生成供助手执行的网页搜索查询
+    # 不保证可直接读取 Reddit；实际结果取决于可用网页搜索工具
     # 如果已配置 Reddit API（下方），建议关闭此项以避免重复
     enabled: true
 

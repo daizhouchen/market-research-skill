@@ -14,6 +14,7 @@ import argparse
 import json
 import os
 import sys
+from datetime import date
 from typing import Any, Dict, List, Optional
 
 try:
@@ -110,7 +111,7 @@ def _build_web_search_queries(
         搜索查询字符串列表
     """
     query_templates = {
-        "market_size": "{keyword} market size {geo} 2024 2025",
+        "market_size": "{keyword} market size {geo} {year}",
         "competitors": "{keyword} competitors analysis {geo}",
         "pricing": "{keyword} pricing comparison {geo}",
         "user_reviews": "{keyword} user reviews complaints {geo}",
@@ -123,9 +124,17 @@ def _build_web_search_queries(
     }
     queries = []
     for dim in dimensions:
-        template = query_templates.get(dim, "{keyword} {dim} {geo}")
-        query = template.format(keyword=keyword, geo=geo, dim=dim)
-        queries.append(query.strip())
+        templates = dimensions_config.get(dim, {}).get("fallback_queries", [])
+        if isinstance(templates, str):
+            templates = [templates]
+        if not templates:
+            templates = [query_templates.get(dim, "{keyword} {dim} {geo}")]
+        for template in templates:
+            query = template.format(keyword=keyword, geo=geo, dim=dim, year=date.today().year)
+            if geo and "{geo}" not in template:
+                query = f"{query} {geo}"
+            if query.strip() not in queries:
+                queries.append(query.strip())
     return queries
 
 
@@ -170,7 +179,7 @@ def generate_call_plan(
             continue
 
         source = _resolve_source_for_dimension(dim_def, available_sources)
-        if source is None or source == "web_search":
+        if source is None or source in ("web_search", "reddit_public"):
             web_search_dimensions.append(dim_name)
             continue
 
@@ -286,7 +295,7 @@ if __name__ == "__main__":
         "--dims",
         type=str,
         nargs="*",
-        default=["market_size", "competitors", "pricing", "user_reviews", "trends"],
+        default=["trend_analysis", "product_competition", "user_demand", "competitor_landscape"],
         help="选定的调研维度",
     )
     args = parser.parse_args()

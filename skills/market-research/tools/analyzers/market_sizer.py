@@ -495,6 +495,7 @@ def triangulate(top_down: dict, bottom_up: dict) -> dict:
     三角验证自上而下和自下而上两个估算结果。
 
     比较两种方法的 TAM/SAM/SOM，给出范围区间和一致性评估。
+    两种方法都缺失的指标返回 None；单一方法仅保留其估计，不声称完成交叉验证。
 
     参数:
         top_down: estimate_tam_top_down 的输出
@@ -518,11 +519,13 @@ def triangulate(top_down: dict, bottom_up: dict) -> dict:
 
     def _make_range(val_a: float, val_b: float) -> dict:
         """生成范围区间和中点。"""
-        if val_a == 0 and val_b == 0:
-            return {"low": 0, "high": 0, "midpoint": 0}
-        low = min(val_a, val_b)
-        high = max(val_a, val_b)
-        midpoint = (val_a + val_b) / 2
+        # Estimators use zero for missing data; do not turn it into a market estimate.
+        available = [value for value in (val_a, val_b) if value > 0]
+        if not available:
+            return {"low": None, "high": None, "midpoint": None}
+        low = min(available)
+        high = max(available)
+        midpoint = sum(available) / len(available)
         return {
             "low": round(low, 2),
             "high": round(high, 2),
@@ -536,9 +539,7 @@ def triangulate(top_down: dict, bottom_up: dict) -> dict:
     # 一致性评估：两个估计的比值越接近 1 越一致
     def _ratio_consistency(a: float, b: float) -> float:
         """两个值的一致性得分 (0-1)，比值越接近1分数越高。"""
-        if a == 0 and b == 0:
-            return 1.0
-        if a == 0 or b == 0:
+        if a <= 0 or b <= 0:
             return 0.0
         ratio = max(a, b) / min(a, b)
         # ratio=1 → 1.0, ratio=2 → 0.5, ratio=5 → 0.2, ratio≥10 → ≈0
@@ -548,8 +549,10 @@ def triangulate(top_down: dict, bottom_up: dict) -> dict:
     sam_consistency = _ratio_consistency(td_sam, bu_sam)
     overall_consistency = (tam_consistency * 0.6 + sam_consistency * 0.4)
 
-    if overall_consistency > 0.7:
-        notes.append("两种方法结果高度一致，估算可信度较高")
+    if td_tam <= 0 or bu_tam <= 0:
+        notes.append("缺少两种有效 TAM 估算，无法交叉验证；区间仅反映已有数据")
+    elif overall_consistency > 0.7:
+        notes.append("两种方法结果高度一致，仍需核对来源独立性与假设")
     elif overall_consistency > 0.4:
         notes.append("两种方法结果存在一定差异，建议进一步验证")
     else:
@@ -564,10 +567,13 @@ def triangulate(top_down: dict, bottom_up: dict) -> dict:
     td_conf = _safe_float(top_down.get("confidence"))
     bu_conf = _safe_float(bottom_up.get("confidence"))
     # 两种方法的置信度加权平均，一致性好时给予加成
-    combined_confidence = (td_conf + bu_conf) / 2 * (0.7 + 0.3 * overall_consistency)
+    combined_confidence = (
+        (td_conf + bu_conf) / 2 * (0.7 + 0.3 * overall_consistency)
+        if td_tam > 0 and bu_tam > 0 else 0.0
+    )
 
     # 合并 CAGR
-    cagr = top_down.get("cagr") or bottom_up.get("cagr")
+    cagr = top_down.get("cagr") if top_down.get("cagr") is not None else bottom_up.get("cagr")
 
     return {
         "tam_range": tam_range,

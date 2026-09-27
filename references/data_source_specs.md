@@ -1,6 +1,6 @@
 # 数据源技术规格
 
-本文档定义了市场研究技能中每个数据源模块的技术规格，包括依赖、认证方式、输入输出、速率限制、错误处理与降级策略。
+本文档保留数据源接口的设计参考。实际函数参数、返回字段与错误处理以 `tools/sources/*.py` 为准：当前实现未统一提供下文所有 metadata、缓存、异步并发与自动重试能力，调用前应查看对应函数。外部平台的额度和权限以本次账号与响应为准，不能凭此文承诺免费或可用。
 
 ---
 
@@ -148,7 +148,7 @@
 
 | 规格项 | 详情 |
 |---|---|
-| **依赖库** | `httpx >= 0.24.0`（GraphQL 请求） |
+| **依赖库** | `requests`（当前 GraphQL 实现） |
 | **认证方式** | Bearer Token（Developer Token） |
 | **基础 URL** | `https://api.producthunt.com/v2/api/graphql` |
 
@@ -214,7 +214,7 @@
 
 | 规格项 | 详情 |
 |---|---|
-| **依赖库** | `paapi5-python-sdk >= 1.0.0` 或 `httpx` + 自定义签名 |
+| **依赖库** | `requests` + 本仓库简化签名实现（非官方 SDK） |
 | **认证方式** | HMAC-SHA256 签名（Access Key + Secret Key） |
 | **基础 URL** | `https://webservices.amazon.com/paapi5/` |
 
@@ -286,7 +286,7 @@
 
 | 规格项 | 详情 |
 |---|---|
-| **依赖库** | `app-store-scraper >= 0.3.5` |
+| **依赖库** | 可选 Node.js `app-store-scraper`；回退使用 Python `requests` 调用 iTunes Search API |
 | **认证方式** | 无需认证 |
 | **基础 URL** | 通过库内部处理（iTunes API） |
 
@@ -445,7 +445,7 @@
 
 | 规格项 | 详情 |
 |---|---|
-| **依赖库** | `httpx >= 0.24.0` |
+| **依赖库** | `requests`（当前实现） |
 | **认证方式** | API Key（Query Parameter 或 Header） |
 | **基础 URL** | `https://api.similarweb.com/v1/` |
 
@@ -523,7 +523,7 @@
 
 | 规格项 | 详情 |
 |---|---|
-| **依赖库** | `httpx >= 0.24.0` |
+| **依赖库** | `requests`（当前实现） |
 | **认证方式** | API Key（Header: `X-cb-user-key`） |
 | **基础 URL** | `https://api.crunchbase.com/api/v4/` |
 

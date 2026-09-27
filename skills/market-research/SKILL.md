@@ -1,6 +1,6 @@
 ---
 name: market-research
-description: "Adaptive market demand analysis skill for Claude Code. Dynamically generates API call strategies based on user-configured data sources, combines structured data collection with deep analysis frameworks, and outputs actionable market insight reports. Use this skill whenever the user mentions market analysis, market research, demand analysis, competitor analysis, product research, or asks questions like 'is there a market for X', 'is it worth building', 'market size', or wants to understand user needs, pain points, or competitive landscape for any product, category, or market direction — even if they don't explicitly say 'market research'."
+description: Research market demand, competitive landscape, pricing, and user needs using configured data sources and web research. Use when the user requests evidence-based market analysis for a product, category, or market decision. Produce a sourced report with assumptions and data gaps; ordinary product advice does not require the full workflow.
 ---
 
 # Market Research Skill — 自适应市场需求分析
@@ -30,25 +30,15 @@ Skill 分为 7 个阶段运行：
 
 ### 1.1 配置文件检查与生成
 
-1. 检查 `config/config.yaml` 是否存在
-   - **如果不存在**（首次使用）：
-     a. **必须暂停工作流**，主动引导用户进行 API 配置
-     b. 向用户展示可用数据源列表，分三个层级说明：
-        - **免费无需配置**（Google Trends、Google Play、App Store、Reddit 公开接口）：告知用户这些数据源开箱即用
-        - **免费但需注册**（Reddit API（更高限额）、Product Hunt、Crunchbase Basic）：告知注册地址和预计时间
-        - **付费**（Amazon PA-API、SimilarWeb）：告知费用和是否值得配置
-     c. 使用 AskUserQuestion 询问用户：
-        - 是否要现在配置额外的 API 密钥？（推荐至少配置 Reddit 以获取用户讨论数据）
-        - 还是先用免费数据源快速开始？
-     d. **根据用户选择**：
-        - 如果用户选择配置 → 读取 `references/api_setup_guide.md` 中对应章节，逐步引导配置，将用户提供的密钥写入 `config/config.yaml`
-        - 如果用户选择跳过 → 从 `config/config.example.yaml` 复制为 `config/config.yaml`（保留免费数据源为 enabled，其余保持 disabled）
-     e. **配置完成后，告知用户**：已生成配置文件 `config/config.yaml`，后续可随时编辑该文件添加更多 API 密钥
-   - **如果已存在**：直接进入步骤 1.2（跳过引导流程）
+路径相对本次加载的 `SKILL.md` 所在目录（插件版位于 `skills/market-research/`），不要把配置写到其他安装副本。
+
+1. 检查 `config/config.yaml`；缺失时从 `config/config.example.yaml` 复制，以默认无需密钥的数据源开始。无需为配置不存在暂停研究。
+2. 用户明确希望配置额外 API 时，读取对应配置指南；凭据只保存在本地配置，报告与日志不输出密钥。
+3. “无需密钥”不保证网络可达；请求失败时记录状态并按计划降级。
 
 ### 1.2 数据源状态检测
 
-2. 运行 `tools/config_loader.py` 检测可用数据源
+2. 运行 `tools/config_loader.py` 检查已启用的数据源和凭据字段；其 available 状态仅表示配置就绪，不验证网络、权限或配额
    - 输出数据源状态汇总卡片（表格形式，包含 ✅/⚠️/❌ 状态图标）
 3. 如果可用数据源少于 3 个，主动建议配置额外数据源
    - 读取 `references/api_setup_guide.md` 中对应章节
@@ -57,9 +47,9 @@ Skill 分为 7 个阶段运行：
 
 ### 1.3 依赖安装
 
-4. 安装缺失的 Python 依赖：
+4. 使用 Python 3.10+；按仓库根目录 `requirements.txt` 安装所需依赖：
    ```bash
-   pip install pytrends praw google-play-scraper pyyaml requests numpy
+   python -m pip install -r <仓库根目录>/requirements.txt
    ```
    - 检查 Node.js 环境以支持 `app-store-scraper`（如需要）
 
@@ -94,13 +84,13 @@ Skill 分为 7 个阶段运行：
    - 哪些维度因缺少数据源而降级
    - 预估耗时
 4. 提示哪些维度可通过配置额外 API 来增强
-5. 用户确认后进入阶段 4
+5. 已在用户授权范围内的公开检索直接进入阶段 4；额外费用或未授权 API 调用先说明具体计划并确认
 
 ## 阶段 4：数据采集与分析
 
 1. 按调用计划依次执行数据采集
    - 每完成一个数据源，输出简短进度
-   - 单个数据源失败 → 记录错误，标记降级，不中断流程
+   - 单个数据源失败 → 记录错误，标记降级，不中断流程；缺失值保留为未知，不用 0 代替，也不据此判断没有需求
    - 如 `show_raw_data=true`，保存原始数据为 JSON
 
 2. 数据清洗
@@ -128,8 +118,9 @@ Skill 分为 7 个阶段运行：
 
 1. **市场规模估算** → `tools/analyzers/market_sizer.py`
    - 自上而下法：从行业报告提取 TAM，按细分/地区缩减为 SAM/SOM
-   - 自下而上法：从搜索量和竞品数据反推市场规模
-   - 三角验证：取两种方法的范围交集
+   - 自下而上法：仅用有单位、地区、期间的绝对搜索量和竞品数据做情景估算；Google Trends 的 0–100 指数不能直接当搜索量
+   - 脚本内置细分比例、触达率等启发式假设，未有数据支持时只作为明确标记的情景，不把计算结果称为观测事实
+   - 三角验证：对照两种方法的估算范围和口径，说明分歧；只有一组数据时不能宣称已经交叉验证
    - 判断市场生命周期阶段（萌芽/成长/成熟/衰退）
 
 2. **竞争力学分析** → `tools/analyzers/innovation_tracker.py`
@@ -155,7 +146,7 @@ Skill 分为 7 个阶段运行：
 
 ## 阶段 5：报告生成
 
-1. 根据实际采集到的数据动态选择报告章节（无数据的维度跳过，不留空章节）
+1. 根据实际采集到的数据选择章节；无数据的维度不编造分析，在数据源状态卡片中保留缺口与对结论的影响
 2. 使用 `templates/full_report.md` 或 `templates/quick_summary.md` 作为模板
 3. 包含数据源状态卡片，保持完全透明
 4. 输出后提示：
@@ -205,7 +196,7 @@ HTML 和 PDF 生成后，尝试自动在浏览器中打开 HTML 文件供用户�
 
 ### 6.4 输出汇总
 
-向用户展示最终输出文件列表：
+向用户展示实际生成成功的文件及失败原因；未生成的 PDF 不列为已交付：
 - `{keyword}市场调研报告.md` — Markdown 原始报告（可编辑）
 - `{keyword}市场调研报告.html` — HTML 网页报告（浏览器打开查看）
 - `{keyword}市场调研报告.pdf` — PDF 报告（自动生成，可直接分享）
@@ -215,11 +206,11 @@ HTML 和 PDF 生成后，尝试自动在浏览器中打开 HTML 文件供用户�
 ## 执行规则
 
 1. **永远先读配置**：执行任何采集前必须先运行 `config_loader.py`
-2. **缺配置要引导**：不只是标记"跳过"，要告知用户配置方法和收益
-3. **展示计划再执行**：调用计划经用户确认后才执行
+2. **缺配置不阻塞**：使用默认无需密钥的数据源，并说明可选配置方法
+3. **展示计划再执行**：按已授权范围推进；额外付费或未授权调用单独确认
 4. **错误不中断**：单个数据源失败 → 记录 → 降级 → 继续
 5. **不造数据**：没采集到的维度跳过，不编造数据填充
-6. **交叉验证**：写入"洞察"的结论必须有多数据源支撑
+6. **交叉验证**：核心判断尽量取得独立来源印证；单一来源明确标记局限，转载同一材料不算多源
 7. **标注来源**：每个数据点标注来自哪个数据源
 8. **标注置信度**：每个推断标注 🟢(高) 🟡(中) 🔴(低)
 9. **区分事实与推断**：数据是事实，分析是推断，不混淆
